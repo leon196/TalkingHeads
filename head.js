@@ -8,6 +8,13 @@ function Head (position_, angle_, front_)
 	this.scaleMouth = 0.75;// + (Math.random() > 0.5 ? 0.5 : 0);
 	this.scaleEar = 0.75;//0.37 + (Math.random() > 0.5 ? 0.37 : 0);
 
+	// Animation Logic
+	this.animationDelay = animationDelay;
+	this.animationElapsed = timeElapsed;
+	this.listenTimeStartLeft = 0;
+	this.listenTimeStartRight = 0;
+	this.listenTimeDelay = 0.2;
+
 	// Head
 	this.spriteHead = new PIXI.Graphics();
 	this.spriteHead.x = this.position.x;
@@ -67,11 +74,25 @@ function Head (position_, angle_, front_)
 		};
     }
 
-	this.animationDelay = animationDelay;
-	this.animationElapsed = timeElapsed;
-
-	this.Update = function ()
+	this.Update = function (delta)
 	{
+		var ratioLeft = (timeElapsed - this.listenTimeStartLeft) / this.listenTimeDelay;
+		var ratioRight = (timeElapsed - this.listenTimeStartRight) / this.listenTimeDelay;
+		ratioLeft = Math.max(0, Math.min(1, ratioLeft));
+		ratioRight = Math.max(0, Math.min(1, ratioRight));
+		
+		if (this.front) {
+			var stretchLeft = Math.sin(ratioLeft * pi2) * 0.25 * (1 - ratioLeft);
+			this.spriteEarLeft.scale.x = this.scaleEar + stretchLeft;
+			this.spriteEarLeft.scale.y = this.scaleEar - stretchLeft;
+		}
+		
+		var stretchRight = Math.sin(ratioRight * pi2) * 0.25 * (1 - ratioRight);
+		this.spriteEarRight.scale.x = -(this.scaleEar + stretchRight);
+		this.spriteEarRight.scale.y = this.scaleEar - stretchRight;
+
+		//this.spriteEarLeft.rotation = Math.sin(ratioLeft * 8) * pi/2 * (1 - ratioLeft);
+		//this.spriteEarRight.rotation = Math.sin(ratioRight * 8) * pi/2 * (1 - ratioRight);
 	}
 
 	this.GetPosition = function () { return new Vec2(this.spriteHead.x, this.spriteHead.y); }
@@ -81,8 +102,8 @@ function Head (position_, angle_, front_)
 		this.spriteHead.y + sizeHead * this.direction.x); }
 
 	this.GetPositionEarRight = function () { return new Vec2(
-		this.spriteHead.x + sizeHead * this.direction.y, 
-		this.spriteHead.y - sizeHead * this.direction.x); }
+		this.spriteHead.x + (this.front ? sizeHead * this.direction.y : -sizeHead * this.direction.x), 
+		this.spriteHead.y + (this.front ? -sizeHead * this.direction.x : sizeHead * this.direction.y)); }
 
 	this.GetPositionMouth = function () { return new Vec2(
 		this.spriteHead.x + (this.front ? sizeHead * this.direction.x : - this.spriteMouth.x * this.direction.x), 
@@ -90,27 +111,18 @@ function Head (position_, angle_, front_)
 
 	this.CanHearLetterFrom = function (letterPosition_)
 	{
-		return distance(letterPosition_, this.GetPositionEarRight()) <= sizeHear || (this.front && distance(letterPosition_, this.GetPositionEarLeft()) <= sizeHear);
-	}
-
-	this.ListenAndRepeat = function (indexLetter_)
-	{
-		letters[indexLetter_].position = this.GetPositionMouth();
-		letters[indexLetter_].direction = this.direction;
-		/*
-		letters[indexLetter_].listening = true;
-		letters[indexLetter_].listenTimeStart = timeElapsed;
-		// Repeat letter
-		var self = this;
-		var callback = function () { self.Speak(); }
-		letters[indexLetter_].StartListening(this.GetPositionMouth(), this.direction, callback);*/
-		//
-		//this.Speak();
+		if (this.front && distance(letterPosition_, this.GetPositionEarLeft()) <= sizeHear) {
+			return 1;
+		}
+		if (distance(letterPosition_, this.GetPositionEarRight()) <= sizeHear) {
+			return 2;
+		}
+		return 0;
 	}
 
 	this.HitTestLetter = function (letterPosition_)
 	{
-		return distance(letterPosition_, this.spriteHead) <= sizeHead;
+		return distance(letterPosition_, this.spriteHead) <= sizeHead * 0.9;
 	}
 
 	this.Speak = function ()
@@ -124,5 +136,15 @@ function Head (position_, angle_, front_)
 	this.SayLetter = function (letter)
 	{
 		SpawnLetter(letter, this.GetPositionMouth(), this.direction);
+	}
+
+	this.ListenLeft = function ()
+	{
+		this.listenTimeStartLeft = timeElapsed;
+	}
+
+	this.ListenRight = function ()
+	{
+		this.listenTimeStartRight = timeElapsed;
 	}
 }

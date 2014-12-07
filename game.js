@@ -130,12 +130,23 @@ function animate()
 	    		lettersGarbage.push(i);
 	    	} 
 	    	// Check Collisions
-	    	else if (!letter.falling && !letter.listening) {
+	    	else if (!letter.falling && !letter.listening && !letter.pronouncing) {
+				// Final listener
+				if (listener.CanHearLetterFrom(letter.position)) {
+					// Clear letter
+		    		letter.Clear();
+		    		letters[i] = null;
+		    		lettersGarbage.push(i)
+				}
 				for (var j = 0; j < heads.length; ++j) {
 					var head = heads[j];
 					// Ears
-					if (head.CanHearLetterFrom(letter.position)) {
-						head.ListenAndRepeat(i);
+					var ear = head.CanHearLetterFrom(letter.position);
+					if (ear > 0) 
+					{
+						letters[i].StartListening(head);
+						if (ear == 1) head.ListenLeft();
+						else head.ListenRight();
 			    		break;
 					}
 					// Head
@@ -143,14 +154,6 @@ function animate()
 						letters[i].Fall(direction(head.GetPosition(), letter.position));
 			    		break;
 					}
-				}
-				// Final listener
-				if (listener.CanHearLetterFrom(letter)) {
-					// Clear letter
-		    		letter.Clear();
-		    		letters[i] = null;
-		    		lettersGarbage.push(i)
-		    		break;
 				}
 	    	}
     	}

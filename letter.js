@@ -7,20 +7,24 @@ function Letter (character_, position_, direction_)
 	this.position = position_;
 	this.direction = direction_;
 	this.speed = 200;
+	this.scale = 0.5;
 
 	// Animation logic
 	this.listening = false;
 	this.listenTimeStart = 0;
+	this.listenTimeDelay = 0.2;
 	this.pronouncing = false;
 	this.pronounceTimeStart = 0;
+	this.pronounceTimeDelay = 0.2;
 	this.falling = false;
 	this.fallTimeStart = 0;
+	this.head;
 
 	this.spriteLetter = new PIXI.Sprite(TextureLetter(this.character));
 	this.spriteLetter.anchor.x = this.spriteLetter.anchor.y = 0.5;
 	this.spriteLetter.x = this.position.x;
 	this.spriteLetter.y = this.position.y;
-	this.spriteLetter.scale.x = this.spriteLetter.scale.y = 0.5;
+	this.spriteLetter.scale.x = this.spriteLetter.scale.y = this.scale;
 	stage.addChild(this.spriteLetter);
 
 	this.Update = function (delta)
@@ -31,11 +35,40 @@ function Letter (character_, position_, direction_)
 			this.position.y += this.velocity.y * delta * this.speed;
 			this.velocity.y += delta * gravity;
 		} 
+		// Listening
+		else if (this.listening) {
+			var ratio = (timeElapsed - this.listenTimeStart) / this.listenTimeDelay;
+			ratio = Math.max(0, Math.min(1, ratio));
+			this.spriteLetter.scale.x = this.spriteLetter.scale.y = this.scale * (1 - ratio);
+
+			if (ratio >= 1)
+			{
+				this.pronouncing = true;
+				this.listening = false;
+				this.pronounceTimeStart = timeElapsed;
+				this.position = this.head.GetPositionMouth();
+				this.direction = this.head.direction;
+			}
+		}
+		// Pronoucing
+		else if (this.pronouncing) {
+
+			var ratio = (timeElapsed - this.pronounceTimeStart) / this.pronounceTimeDelay;
+			ratio = Math.max(0, Math.min(1, ratio));
+			this.spriteLetter.scale.x = this.spriteLetter.scale.y = this.scale * ratio;
+
+			if (ratio >= 1)
+			{
+				this.pronouncing = false;
+				this.head.Speak();
+				this.head = null;
+			}
+		}
 		// Move
-		else {
+		//else {
 			this.position.x += this.direction.x * delta * this.speed;
 			this.position.y += this.direction.y * delta * this.speed;
-		}
+		//}
 
 		this.spriteLetter.x = this.position.x;
 		this.spriteLetter.y = this.position.y;
@@ -56,5 +89,12 @@ function Letter (character_, position_, direction_)
 		this.falling = true;
 		this.fallTimeStart = timeElapsed;
 		this.velocity = new Vec2(direction_.x, direction_.y);
+	}
+
+	this.StartListening = function (head)
+	{
+		this.listening = true;
+		this.listenTimeStart = timeElapsed;
+		this.head = head;
 	}
 }
