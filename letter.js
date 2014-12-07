@@ -10,6 +10,7 @@ function Letter (character_, position_, direction_)
 	this.scale = 0.5;
 
 	// Game Logic
+	this.heads = [];
 	this.repeated = 0;
 
 	// Animation logic
@@ -99,6 +100,10 @@ function Letter (character_, position_, direction_)
 		this.listening = true;
 		this.listenTimeStart = timeElapsed;
 		this.head = head;
-		++this.repeated;
+		if (this.heads.indexOf(head) == -1)
+		{
+			this.heads.push(head);
+			++this.repeated;	
+		}
 	}
 }

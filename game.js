@@ -5,9 +5,9 @@ var pi2 = 6.283185307179586476925286766559;
 // Sizes
 var windowWidth = window.innerWidth;
 var windowHeight = window.innerHeight;
-var marginWidth = 128;
-var marginHeight = 128;
-var grid = new Vec2(16, 3);
+var marginWidth = windowWidth / 4;
+var marginHeight = windowHeight / 4;
+var grid = new Vec2(4, 3);
 var sizeHead = 64;
 var sizeLetter = 32;
 var sizeHear = 32;
@@ -35,6 +35,9 @@ var winningTimeDelay = 10;
 
 //
 var gravity = 9;
+var MAX_LETTERS = 1000;
+var text = " hi there ! welcome to talking heads. a game about information circulation made in forty eight hours by leon for ludum dare thirty one. rules are drag and drop heads and build a complete circuit for a reward. big love for ludum dare and thank you for playing !";
+var textCurrent = 0;
 
 // Timing
 var timeScale = 0.001;
@@ -129,10 +132,13 @@ function GenerateHeads ()
 	randomList = shuffle(randomList);
 
 	// "Level Design"
-	var count = 10;
-	var directions = [0, 0, 3, 3, 2, 2, 2, 1, 1, 1];
+	var directions = [1, 2, 3, 0, 1, 0, 2];
 
-	for (var i = 0; i < count; ++i) {
+	// Add First Head
+	heads.push(new Head(new Vec2(windowWidth * 0.8, windowHeight*0.2), pi2 * 1 / 4, true));
+
+	// Add Heads
+	for (var i = 0; i < directions.length; ++i) {
 		var rand = randomList[i];
 		var x = windowWidth * (rand % grid.x) / grid.x;
 		var y = windowHeight * Math.floor(rand / grid.x) / grid.y;
@@ -147,7 +153,7 @@ function SpawnLetter (character_, position_, direction_)
 	if (lettersGarbage.length > 0) {
 		letters[lettersGarbage[0]] = new Letter(character_, position_, direction_);
 		lettersGarbage.splice(0, 1);
-	} else if (letters.length < 1000) {
+	} else if (letters.length < MAX_LETTERS) {
 		letters.push(new Letter(character_, position_, direction_));
 	}
 }
@@ -170,7 +176,10 @@ function animate()
 	// Spawn Letters
 	if (letterElapsed + letterDelay < timeElapsed) {
 		letterElapsed = timeElapsed;
-		speaker.SayLetter(RandomLetter());
+		var character = NextLetter();
+		if (font.indexOf(character) != -1) {
+			speaker.SayLetter(character);	
+		}
 	}
 
     // Update Letters
@@ -299,6 +308,12 @@ function TextureEyes () { return textureListEyes[Math.floor(Math.random() * text
 
 var textureClapCurrent = 0;
 function TextureClap () { textureClapCurrent = (textureClapCurrent + 1) % 2; return textureListClap[textureClapCurrent]; }
+
+function NextLetter ()
+{
+	textCurrent = (textCurrent + 1) % text.length;
+	return text[textCurrent];
+}
 
 // Utils
 function Vec2 (x_, y_)
