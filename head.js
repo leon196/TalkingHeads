@@ -7,10 +7,13 @@ function Head (position_, angle_, front_)
 	this.direction = new Vec2(Math.cos(this.angle), Math.sin(this.angle));
 	this.scaleMouth = 0.75;// + (Math.random() > 0.5 ? 0.5 : 0);
 	this.scaleEar = 0.75;//0.37 + (Math.random() > 0.5 ? 0.37 : 0);
+	this.scaleEyes = 0.75;
 
 	// Animation Logic
-	this.animationDelay = animationDelay;
+	this.animationDelay = 1;
 	this.animationElapsed = timeElapsed;
+	this.speakDelay = animationDelay;
+	this.speakElapsed = timeElapsed;
 	this.listenTimeStartLeft = 0;
 	this.listenTimeStartRight = 0;
 	this.listenTimeDelay = 0.2;
@@ -19,25 +22,42 @@ function Head (position_, angle_, front_)
 	this.spriteHead = new PIXI.Graphics();
 	this.spriteHead.x = this.position.x;
 	this.spriteHead.y = this.position.y;
-	this.spriteHead.beginFill(0xffffff);
+	//this.spriteHead.width = this.spriteHead.height = sizeHead;
+	/*this.spriteHead.beginFill(0xffffff);
 	this.spriteHead.lineStyle(2, 0x000000);
 	this.spriteHead.drawCircle(0, 0, sizeHead);
-	this.spriteHead.endFill();    
+	this.spriteHead.endFill(); */   
 	this.spriteHead.rotation = this.front ? this.angle - pi/2 : this.angle + pi;
 	this.directionHead = new Vec2(Math.cos(this.spriteHead.rotation), Math.sin(this.spriteHead.rotation));
 	stage.addChild(this.spriteHead);
 
+	// Visage
+	this.spriteVisage = new PIXI.Sprite(textureHead);
+	this.spriteVisage.anchor.x = this.spriteVisage.anchor.y = 0.5;
+	this.spriteVisage.width = this.spriteVisage.height = sizeHead * 3;
+	this.spriteHead.addChild(this.spriteVisage);
+
+	// Eyes
+	this.spriteEyes = new PIXI.Sprite(TextureEyes());
+	this.spriteEyes.anchor.x = this.spriteEyes.anchor.y = 0.5;
+	this.spriteEyes.scale.x = this.spriteEyes.scale.y = this.scaleEyes;
+	this.spriteEyes.x = 0;//(this.front ? 0 : -sizeHead);
+	this.spriteEyes.y = -sizeHead * 0.5;//(this.front ? -sizeHead * 0.5 : 0);
+	this.spriteHead.addChild(this.spriteEyes);
+
+	// Ears
 	this.textureEar = this.front ? TextureEarFront() : TextureEarSide();
 	
 	// Ear Left
 	if (this.front)
 	{
 		this.spriteEarLeft = new PIXI.Sprite(this.textureEar);
-		this.spriteEarLeft.anchor.x = this.spriteEarLeft.anchor.y = 0.5;
-		this.spriteEarLeft.x = - sizeHead;
+		this.spriteEarLeft.anchor.x = 0.5;
+		this.spriteEarLeft.anchor.y = 0.5;
 		//this.spriteEarLeft.y = this.position.y;// - sizeHead/2;
 		this.spriteEarLeft.scale.x *= this.scaleEar;
 		this.spriteEarLeft.scale.y *= this.scaleEar;
+		this.spriteEarLeft.x = - sizeHead;
 		this.spriteHead.addChild(this.spriteEarLeft);
 	}
 
@@ -76,20 +96,28 @@ function Head (position_, angle_, front_)
 
 	this.Update = function (delta)
 	{
-		var ratioLeft = (timeElapsed - this.listenTimeStartLeft) / this.listenTimeDelay;
-		var ratioRight = (timeElapsed - this.listenTimeStartRight) / this.listenTimeDelay;
-		ratioLeft = Math.max(0, Math.min(1, ratioLeft));
-		ratioRight = Math.max(0, Math.min(1, ratioRight));
-		
+
+		// Ear Animations
+
 		if (this.front) {
+			var ratioLeft = (timeElapsed - this.listenTimeStartLeft) / this.listenTimeDelay;
+			ratioLeft = Math.max(0, Math.min(1, ratioLeft));
 			var stretchLeft = Math.sin(ratioLeft * pi2) * 0.25 * (1 - ratioLeft);
 			this.spriteEarLeft.scale.x = this.scaleEar + stretchLeft;
 			this.spriteEarLeft.scale.y = this.scaleEar - stretchLeft;
 		}
 		
+		var ratioRight = (timeElapsed - this.listenTimeStartRight) / this.listenTimeDelay;
+		ratioRight = Math.max(0, Math.min(1, ratioRight));
 		var stretchRight = Math.sin(ratioRight * pi2) * 0.25 * (1 - ratioRight);
 		this.spriteEarRight.scale.x = -(this.scaleEar + stretchRight);
 		this.spriteEarRight.scale.y = this.scaleEar - stretchRight;
+
+		if (this.animationElapsed + this.animationDelay < timeElapsed)
+		{
+			this.animationElapsed = timeElapsed;
+			this.spriteEyes.texture = TextureEyes();
+		}
 
 		//this.spriteEarLeft.rotation = Math.sin(ratioLeft * 8) * pi/2 * (1 - ratioLeft);
 		//this.spriteEarRight.rotation = Math.sin(ratioRight * 8) * pi/2 * (1 - ratioRight);
@@ -127,9 +155,9 @@ function Head (position_, angle_, front_)
 
 	this.Speak = function ()
 	{
-		if (this.animationElapsed + this.animationDelay < timeElapsed)
+		if (this.speakElapsed + this.speakDelay < timeElapsed)
 		{
-			this.animationElapsed = timeElapsed;
+			this.speakElapsed = timeElapsed;
 			this.spriteMouth.texture = this.front ? TextureMouthFront() : TextureMouthSide();
 		}
 	}
