@@ -29,6 +29,9 @@ var heads = [];
 var letters = [];
 var lettersGarbage = [];
 
+//
+var gravity = 9;
+
 // Timing
 var timeScale = 0.001;
 var timeStarted = new Date() * timeScale;
@@ -58,7 +61,7 @@ function onAssetsLoaded ()
 
 	// Setup Game
 	speaker = new Head(new Vec2(windowWidth, windowHeight*0.2), pi, false);
-	listener = new Head(new Vec2(0, windowHeight*0.2), pi, false);
+	listener = new Head(new Vec2(0, windowHeight*0.8), pi, false);
 	GenerateHeads();
 
 	// Start Game Loop
@@ -127,30 +130,27 @@ function animate()
 	    		lettersGarbage.push(i);
 	    	} 
 	    	// Check Collisions
-	    	else {
+	    	else if (!letter.falling && !letter.listening) {
 				for (var j = 0; j < heads.length; ++j) {
 					var head = heads[j];
 					// Ears
 					if (head.CanHearLetterFrom(letter.position)) {
-						// Repeat letter
-			    		letters[i].position = head.GetPositionMouth();
-			    		letters[i].direction = head.direction;
-			    		//
-			    		head.Speak();
+						head.ListenAndRepeat(i);
 			    		break;
 					}
 					// Head
 					else if (head.HitTestLetter(letter.position)) {
-						letters[i].Fall();
-					}
-					// Final listener
-					else if (listener.CanHearLetterFrom(letter)) {
-						// Clear letter
-			    		letter.Clear();
-			    		letters[i] = null;
-			    		lettersGarbage.push(i)
+						letters[i].Fall(direction(head.GetPosition(), letter.position));
 			    		break;
 					}
+				}
+				// Final listener
+				if (listener.CanHearLetterFrom(letter)) {
+					// Clear letter
+		    		letter.Clear();
+		    		letters[i] = null;
+		    		lettersGarbage.push(i)
+		    		break;
 				}
 	    	}
     	}
@@ -232,6 +232,11 @@ function RandomSpawnPositionVec2 ()
 function RandomHeadAngle () { return (Math.floor(Math.random() * 4) / 4) * pi2; }
 
 function distance(v1, v2) { return Math.sqrt((v2.x - v1.x) * (v2.x - v1.x) + (v2.y - v1.y) * (v2.y - v1.y)); }
+
+function direction(v1, v2) {
+	var dist = distance(v1, v2);
+	return new Vec2((v2.x - v1.x) / dist, (v2.y - v1.y) / dist);
+}
 
 function shuffle(array) {
   var currentIndex = array.length, temporaryValue, randomIndex ;

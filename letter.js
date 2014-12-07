@@ -9,6 +9,10 @@ function Letter (character_, position_, direction_)
 	this.speed = 200;
 
 	// Animation logic
+	this.listening = false;
+	this.listenTimeStart = 0;
+	this.pronouncing = false;
+	this.pronounceTimeStart = 0;
 	this.falling = false;
 	this.fallTimeStart = 0;
 
@@ -21,13 +25,17 @@ function Letter (character_, position_, direction_)
 
 	this.Update = function (delta)
 	{
-
+		// Fall
 		if (this.falling) {
-			
+			this.position.x += this.velocity.x * delta * this.speed;
+			this.position.y += this.velocity.y * delta * this.speed;
+			this.velocity.y += delta * gravity;
+		} 
+		// Move
+		else {
+			this.position.x += this.direction.x * delta * this.speed;
+			this.position.y += this.direction.y * delta * this.speed;
 		}
-
-		this.position.x += this.direction.x * delta * this.speed;
-		this.position.y += this.direction.y * delta * this.speed;
 
 		this.spriteLetter.x = this.position.x;
 		this.spriteLetter.y = this.position.y;
@@ -43,9 +51,10 @@ function Letter (character_, position_, direction_)
 		stage.removeChild(this.spriteLetter);
 	}
 
-	this.Fall = function ()
+	this.Fall = function (direction_)
 	{
-		falling = true;
-		letters[i].fallTimeStart = timeElapsed;
+		this.falling = true;
+		this.fallTimeStart = timeElapsed;
+		this.velocity = new Vec2(direction_.x, direction_.y);
 	}
 }
