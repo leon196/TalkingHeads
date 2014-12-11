@@ -4,7 +4,7 @@ var textLetters = [];
 var animationElapsed = 0;
 var animationDelay = 0.2;
 
-var winningTimeDelay = 3;
+var winningTimeDelay = 5;
 
 var currentClap = 0;
 

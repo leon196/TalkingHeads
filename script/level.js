@@ -1,8 +1,8 @@
 
 // List of Talking Heads ... !
 var heads = [];
-var headCount = 4;
-var MAX_HEADS = 12;
+var MIN_RANDOM_HEADS = 4;
+var MAX_RANDOM_HEADS = 8;
 
 // List of Letter elements
 var letters = [];
@@ -62,66 +62,39 @@ Level.Reset = function ()
 	}
 };
 
-Level.NextLevel = function ()
-{
-	headCount = Math.min(headCount + 2, MAX_HEADS);
-	Level.StartNewLevel();
-};
-
 Level.StartNewLevel = function ()
 {
 	var directions = [2, 1, 2, 3];
-	var firstDirection;
+	var positions;
 	var previousDirection;
-	var randomGridPositionIn = Utils.Vec2Grid(Math.floor(Math.random()*gridDimension*gridDimension));
-	var randomGridPositionOut = Utils.Vec2Grid(Math.floor(Math.random()*gridDimension*gridDimension));
-	var position;
+	var position, angle;
 	
-	// Ratio check for screen space
-	/*if (windowWidth > windowHeight)
-	{*/
-		// First Speaker
-		position = new Utils.Vec2(windowWidth, randomGridPositionIn.y);
-		firstSpeaker = Level.CreateHead(position, Utils.GetCardinalRadian(2), false);
+	// First Speaker
+	position = new Utils.Vec2(windowWidth, windowHeight / 2);
+	firstSpeaker = Level.CreateHead(position, Utils.GetCardinalRadian(2), false);
 
-		// Final Listener
-		position = new Utils.Vec2(0, randomGridPositionOut.y);
-		finalListener = Level.CreateHead(position, Utils.GetCardinalRadian(2), false);
+	// Final Listener
+	position = new Utils.Vec2(0,  windowHeight / 2);
+	finalListener = Level.CreateHead(position, Utils.GetCardinalRadian(2), false);
 
-		//
-		firstDirection = previousDirection = 2;
-	/*} 
-	else 
-	{
-		// First Speaker
-		position = new Utils.Vec2(randomGridPositionIn.x, windowHeight);
-		firstSpeaker = Level.CreateHead(position, Utils.GetCardinalRadian(3), false);
-
-		// Final Listener
-		position = new Utils.Vec2(randomGridPositionOut.x, 0);
-		finalListener = Level.CreateHead(position, Utils.GetCardinalRadian(3), false);
-
-		//
-		firstDirection = previousDirection = 3;
-	}*/
+	//
+	previousDirection = 2;
 
 	// Level design is made by the index of cardinal point
-	/*for (var i = 0; i < headCount; ++i) {
+	var headRandomCount = MIN_RANDOM_HEADS + Math.floor( Math.random() * MAX_RANDOM_HEADS );
+	for (var i = 0; i < headRandomCount; ++i) {
 		var dir;
-		if (i < 4){
-			dir = i;
-		} else {
-			dir = ( previousDirection + (Math.random() > 0.5 ? -1 : 1) ) % 4;
-		}
+		dir = ( previousDirection + (Math.random() > 0.5 ? -1 : 1) + 4 ) % 4;
 		previousDirection = dir;
 		directions.push( dir );
-	}*/
+	}
 
-	// Some level may require specific positions (directions.length != positions.length)
-	var positions = Utils.GetRandomUniqueNumbers(gridDimension * gridDimension);
+	if (previousDirection == 1 || previousDirection == 3)
+	{
+		directions.push(Math.random() > 0.5 ? 0 : 2);
+	}
 
-	// Generate Heads
-	var position, angle;
+	positions = Utils.GetRandomUniqueNumbers(gridDimension * gridDimension);
 	for (var i = 0; i < directions.length; ++i) 
 	{
 		Level.AddHead( Utils.Vec2Grid( positions[i] ), Utils.GetCardinalRadian( directions[i] ) );

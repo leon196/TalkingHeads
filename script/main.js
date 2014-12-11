@@ -36,6 +36,11 @@ function OnResize (event)
 	Level.Resize(ratioX, ratioY);
 }
 
+function CloseMessage ()
+{
+	window.document.getElementById("info").style.visibility = "hidden";
+}
+
 // Pixi Loader
 var loader = new PIXI.AssetLoader(assets);
 

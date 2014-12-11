@@ -3,7 +3,6 @@
 {
     padding: 0;
     margin: 0;
-    color: #ffffff;
 }
 
 canvas 
@@ -27,4 +26,15 @@ canvas
     height: 100%;
     background: #333333;
     overflow: hidden;
+}
+
+#info
+{
+    font-family: sans-serif;
+    font-family: 20px;
+    color: #000000;
+    display: block;
+    position: fixed;
+    top: 8px;
+    left: 8px;
 }

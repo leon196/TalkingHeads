@@ -27,7 +27,7 @@ Game.Start = function ()
 	
 	Level.StartNewLevel();
 
-	Animation.SetupText("Talking Heads");
+	Animation.SetupText("welcome");
 }
 
 Game.Restart = function ()
@@ -35,7 +35,7 @@ Game.Restart = function ()
 	Level.Reset();
 	Level.StartNewLevel();
 
-	Animation.SetupText("Talking Heads");
+	Animation.SetupText(Font.GetCheer());
 }
 
 Game.Update = function () 
