@@ -4,10 +4,11 @@ function Head (position_, angle_, front_)
 	this.front = front_;
 	this.position = position_;
 	this.angle = angle_;
-	this.direction = new Vec2(Math.cos(this.angle), Math.sin(this.angle));
-	this.scaleMouth = 0.75;// + (Math.random() > 0.5 ? 0.5 : 0);
-	this.scaleEar = 0.75;//0.37 + (Math.random() > 0.5 ? 0.37 : 0);
-	this.scaleEyes = 0.75;
+	this.direction = new Utils.Vec2(Math.cos(this.angle), Math.sin(this.angle));
+	this.scaleMouth = 0.5;// + (Math.random() > 0.5 ? 0.5 : 0);
+	this.scaleEar = 0.5;//0.37 + (Math.random() > 0.5 ? 0.37 : 0);
+	this.scaleEyes = 0.5;
+	this.mouthRatioHeigth = 0.5;
 
 	// Animation Logic
 	this.animationDelay = 1;
@@ -28,8 +29,23 @@ function Head (position_, angle_, front_)
 	this.spriteHead.drawCircle(0, 0, sizeHead);
 	this.spriteHead.endFill(); */   
 	this.spriteHead.rotation = this.front ? this.angle - pi/2 : this.angle + pi;
-	this.directionHead = new Vec2(Math.cos(this.spriteHead.rotation), Math.sin(this.spriteHead.rotation));
-	stage.addChild(this.spriteHead);
+	this.rotationHead = this.spriteHead.rotation;
+	this.directionHead = new Utils.Vec2(Math.cos(this.spriteHead.rotation), Math.sin(this.spriteHead.rotation));
+	layerHead.addChild(this.spriteHead);
+
+	//
+	var spriteHead = this.spriteHead;
+	var rotationHead = this.rotationHead;
+	this.animationCollision = new Timing (0.5, 
+		function (elapsed, ratio) { 
+		spriteHead.scale.x = 1 + (1 - ratio) * Math.sin(elapsed * 40) * 0.05;
+		spriteHead.scale.y = 1 - (1 - ratio) * Math.sin(elapsed * 40) * 0.05;
+		//spriteHead.rotation = rotationHead + (1 - ratio) * Math.sin(elapsed * 20) * pi / 4
+	});
+	this.animationOver = new Timing (0.5, 
+		function (elapsed, ratio) { 
+		spriteHead.rotation = rotationHead + (1 - ratio) * Math.sin(elapsed * 20) * pi / 8;
+	});
 
 	// Visage
 	this.spriteVisage = new PIXI.Sprite(textureHead);
@@ -38,7 +54,7 @@ function Head (position_, angle_, front_)
 	this.spriteHead.addChild(this.spriteVisage);
 
 	// Eyes
-	this.spriteEyes = new PIXI.Sprite(TextureEyes());
+	this.spriteEyes = new PIXI.Sprite(Asset.TextureEyes());
 	this.spriteEyes.anchor.x = this.spriteEyes.anchor.y = 0.5;
 	this.spriteEyes.scale.x = this.spriteEyes.scale.y = this.scaleEyes;
 	this.spriteEyes.x = 0;//(this.front ? 0 : -sizeHead);
@@ -46,7 +62,7 @@ function Head (position_, angle_, front_)
 	this.spriteHead.addChild(this.spriteEyes);
 
 	// Ears
-	this.textureEar = this.front ? TextureEarFront() : TextureEarSide();
+	this.textureEar = this.front ? Asset.TextureEarFront() : Asset.TextureEarSide();
 	
 	// Ear Left
 	if (this.front)
@@ -72,30 +88,46 @@ function Head (position_, angle_, front_)
 	this.spriteHead.addChild(this.spriteEarRight);
 	
 	// Mouth
-	this.spriteMouth = new PIXI.Sprite(this.front ? TextureMouthFront() : TextureMouthSide());
+	this.spriteMouth = new PIXI.Sprite(this.front ? Asset.TextureMouthFront() : Asset.TextureMouthSide());
 	this.spriteMouth.anchor.x = this.spriteMouth.anchor.y = 0.5;
 	this.spriteMouth.x = (this.front ? 0 : -sizeHead);
-	this.spriteMouth.y = (this.front ? sizeHead * 0.5 : 0);
+	this.spriteMouth.y = (this.front ? sizeHead * this.mouthRatioHeigth : 0);
 	this.spriteMouth.scale.x *= this.scaleMouth;
 	this.spriteMouth.scale.y *= this.scaleMouth;
 	this.spriteHead.addChild(this.spriteMouth);
      
     if (this.front)
     {
+    	/*********************/
    		// Drag & Drop
+   		/*********************/
 	    this.spriteHead.interactive = true;
 	    this.spriteHead.buttonMode = true;
-	    this.spriteHead.mousedown = function(data)
-		{
-		    eventData = data;
-		    dragged = this;
-		    dragging = true;
-			//stage.setChildIndex(this, stage.children.length - 1);
-		};
+
+		// Press Clic / Touch
+	    this.spriteHead.mousedown = Controls.DragHeadCallback;
+	    this.spriteHead.touchstart = Controls.DragHeadCallback;
+
+	    // Release Clic / Touch
+	    this.spriteHead.mouseup = Controls.DropHeadCallback;
+	    this.spriteHead.mouseupoutside = Controls.DropHeadCallback;
+	    this.spriteHead.touchend = Controls.DropHeadCallback;
+	    this.spriteHead.touchendoutside = Controls.DropHeadCallback;
+
+	    // Move
+	    this.spriteHead.mousemove = this.spriteHead.touchmove = Controls.MoveHeadCallback;
+
+	    // Over
+	    var self = this;
+	    this.spriteHead.mouseover = function (event) {
+	    	self.animationOver.Start();
+	    };
     }
 
 	this.Update = function (delta)
 	{
+		this.animationCollision.Update();
+    	this.animationOver.Update();
 
 		// Ear Animations
 
@@ -116,33 +148,33 @@ function Head (position_, angle_, front_)
 		if (this.animationElapsed + this.animationDelay < timeElapsed)
 		{
 			this.animationElapsed = timeElapsed;
-			this.spriteEyes.texture = TextureEyes();
+			this.spriteEyes.texture = Asset.TextureEyes();
 		}
 
 		//this.spriteEarLeft.rotation = Math.sin(ratioLeft * 8) * pi/2 * (1 - ratioLeft);
 		//this.spriteEarRight.rotation = Math.sin(ratioRight * 8) * pi/2 * (1 - ratioRight);
 	}
 
-	this.GetPosition = function () { return new Vec2(this.spriteHead.x, this.spriteHead.y); }
+	this.GetPosition = function () { return new Utils.Vec2(this.spriteHead.x, this.spriteHead.y); }
 
-	this.GetPositionEarLeft = function () { return new Vec2(
+	this.GetPositionEarLeft = function () { return new Utils.Vec2(
 		this.spriteHead.x - sizeHead * this.direction.y, 
 		this.spriteHead.y + sizeHead * this.direction.x); }
 
-	this.GetPositionEarRight = function () { return new Vec2(
+	this.GetPositionEarRight = function () { return new Utils.Vec2(
 		this.spriteHead.x + (this.front ? sizeHead * this.direction.y : -sizeHead * this.direction.x), 
 		this.spriteHead.y + (this.front ? -sizeHead * this.direction.x : sizeHead * this.direction.y)); }
 
-	this.GetPositionMouth = function () { return new Vec2(
-		this.spriteHead.x + (this.front ? sizeHead * this.direction.x : - this.spriteMouth.x * this.direction.x), 
-		this.spriteHead.y + sizeHead * this.direction.y); }
+	this.GetPositionMouth = function () { return new Utils.Vec2(
+		this.spriteHead.x + (this.front ? sizeHead * this.direction.x * this.mouthRatioHeigth : - this.spriteMouth.x * this.direction.x), 
+		this.spriteHead.y + sizeHead * this.mouthRatioHeigth * this.direction.y); }
 
 	this.CanHearLetterFrom = function (letterPosition_)
 	{
-		if (this.front && distance(letterPosition_, this.GetPositionEarLeft()) <= sizeHear) {
+		if (this.front && Utils.Distance(letterPosition_, this.GetPositionEarLeft()) <= sizeHear) {
 			return 1;
 		}
-		if (distance(letterPosition_, this.GetPositionEarRight()) <= sizeHear) {
+		if (Utils.Distance(letterPosition_, this.GetPositionEarRight()) <= sizeHear) {
 			return 2;
 		}
 		return 0;
@@ -150,7 +182,12 @@ function Head (position_, angle_, front_)
 
 	this.HitTestLetter = function (letterPosition_)
 	{
-		return distance(letterPosition_, this.spriteHead) <= sizeHead * 0.9;
+		if (Utils.Distance(letterPosition_, this.spriteHead) <= sizeHead)
+		{
+			this.animationCollision.Start();
+			return true;
+		}
+		return false;
 	}
 
 	this.Speak = function ()
@@ -158,12 +195,8 @@ function Head (position_, angle_, front_)
 		if (this.speakElapsed + this.speakDelay < timeElapsed)
 		{
 			this.speakElapsed = timeElapsed;
-			this.spriteMouth.texture = this.front ? TextureMouthFront() : TextureMouthSide();
+			this.spriteMouth.texture = this.front ? Asset.TextureMouthFront() : Asset.TextureMouthSide();
 		}
-	}
-	this.SayLetter = function (letter)
-	{
-		SpawnLetter(letter, this.GetPositionMouth(), this.direction);
 	}
 
 	this.ListenLeft = function ()

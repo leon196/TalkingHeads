@@ -7,7 +7,7 @@ function Letter (character_, position_, direction_)
 	this.position = position_;
 	this.direction = direction_;
 	this.speed = 200;
-	this.scale = 0.5;
+	this.scale = 0.3;
 
 	// Game Logic
 	this.heads = [];
@@ -24,12 +24,12 @@ function Letter (character_, position_, direction_)
 	this.fallTimeStart = 0;
 	this.head;
 
-	this.spriteLetter = new PIXI.Sprite(TextureLetter(this.character));
+	this.spriteLetter = new PIXI.Sprite(Asset.TextureLetter(this.character));
 	this.spriteLetter.anchor.x = this.spriteLetter.anchor.y = 0.5;
 	this.spriteLetter.x = this.position.x;
 	this.spriteLetter.y = this.position.y;
 	this.spriteLetter.scale.x = this.spriteLetter.scale.y = this.scale;
-	stage.addChild(this.spriteLetter);
+	layerLetter.addChild(this.spriteLetter);
 
 	this.Update = function (delta)
 	{
@@ -85,14 +85,16 @@ function Letter (character_, position_, direction_)
 
 	this.Clear = function ()
 	{
-		stage.removeChild(this.spriteLetter);
+		this.spriteLetter.parent.removeChild(this.spriteLetter);
 	}
 
 	this.Fall = function (direction_)
 	{
 		this.falling = true;
 		this.fallTimeStart = timeElapsed;
-		this.velocity = new Vec2(direction_.x, direction_.y);
+		this.velocity = new Utils.Vec2(
+			direction_.x * (1 + Math.random() * letterCollisionStrength), 
+			direction_.y * (1 + Math.random() * letterCollisionStrength));
 	}
 
 	this.StartListening = function (head)
