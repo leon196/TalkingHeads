@@ -3,7 +3,7 @@ TalkingHeads
 
 Game for Ludum Dare 31
 
-Ludum Dare entry post
+Description
 ============
 
 Talking Heads is a game about information circulation.
@@ -22,6 +22,11 @@ For now there is only one drawing reward when you go the next level, but i will 
 Coded in HTML5 with Pixi.js
 
 <3 Ludum Dare
+
+Ludum Dare entry post
+============
+
+http://ludumdare.com/compo/ludum-dare-31/?action=preview&uid=11872
 
 License
 ============
