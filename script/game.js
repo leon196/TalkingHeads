@@ -34,8 +34,6 @@ Game.Restart = function ()
 {
 	Level.Reset();
 	Level.StartNewLevel();
-
-	Animation.SetupText(Font.GetCheer());
 }
 
 Game.Update = function () 

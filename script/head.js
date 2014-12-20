@@ -5,10 +5,10 @@ function Head (position_, angle_, front_)
 	this.position = position_;
 	this.angle = angle_;
 	this.direction = new Utils.Vec2(Math.cos(this.angle), Math.sin(this.angle));
-	this.scaleMouth = 0.5;// + (Math.random() > 0.5 ? 0.5 : 0);
-	this.scaleEar = 0.5;//0.37 + (Math.random() > 0.5 ? 0.37 : 0);
-	this.scaleEyes = 0.5;
-	this.mouthRatioHeigth = 0.5;
+	this.scaleMouth = 0.45;// + (Math.random() > 0.5 ? 0.5 : 0);
+	this.scaleEar = 0.45;//0.37 + (Math.random() > 0.5 ? 0.37 : 0);
+	this.scaleEyes = 0.45;
+	this.mouthRatioHeigth = 0.45;
 
 	// Animation Logic
 	this.animationDelay = 1;
@@ -50,7 +50,7 @@ function Head (position_, angle_, front_)
 	// Visage
 	this.spriteVisage = new PIXI.Sprite(textureHead);
 	this.spriteVisage.anchor.x = this.spriteVisage.anchor.y = 0.5;
-	this.spriteVisage.width = this.spriteVisage.height = sizeHead * 3;
+	this.spriteVisage.width = this.spriteVisage.height = sizeHead * 2.5;
 	this.spriteHead.addChild(this.spriteVisage);
 
 	// Eyes

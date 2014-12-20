@@ -1,8 +1,8 @@
 
 // List of Talking Heads ... !
 var heads = [];
-var MIN_RANDOM_HEADS = 4;
-var MAX_RANDOM_HEADS = 8;
+var MIN_RANDOM_HEADS = 2;
+var MAX_RANDOM_HEADS = 2;
 
 // List of Letter elements
 var letters = [];
@@ -146,6 +146,7 @@ Level.Update = function (deltaTime_)
 		    		// Wining
 		    		if (!winning && letter.repeated == heads.length) {
 						animationVictory.Start();
+						Animation.SetupText(Font.GetCheer());
 						winning = true;
 		    		}
 				}

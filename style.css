@@ -32,7 +32,8 @@ canvas
 {
     font-family: sans-serif;
     font-family: 20px;
-    color: #000000;
+    color: black;
+    background-color: #ffd687;
     display: block;
     position: fixed;
     top: 8px;
